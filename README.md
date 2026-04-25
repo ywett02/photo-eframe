@@ -6,6 +6,21 @@ The display supports 6 colors: **black, white, red, yellow, green, blue**. Photo
 
 ---
 
+## Example Result
+
+| Original photo | Converted (6-color BMP) | On the frame |
+|---|---|---|
+| ![Original](assets/gdansk_city.jpg) | ![Converted](assets/gdansk_city_converted.png) | ![Frame](assets/gdansk_frame.jpg) |
+
+---
+
+## Hardware
+
+- [Waveshare 7.3" E-Paper display with frame for Raspberry Pi Zero](https://rpishop.cz/650647/waveshare-7-3-e-paper-displej-s-rameckem-pro-raspberry-pi-zero/)
+- [Raspberry Pi Zero 2 W with soldered GPIO header](https://rpishop.cz/535843/raspberry-pi-zero-2-w-s-pripajenym-gpio-headerem/)
+
+---
+
 ## Requirements
 
 **Mac** (conversion):
