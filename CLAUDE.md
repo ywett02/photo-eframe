@@ -6,9 +6,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This project converts images for display on a **Waveshare E6 e-ink display** (800×480 or 480×800 px) using a fixed 7-color palette: black, white, yellow, red, orange, blue, green.
 
+## Pipeline
+
+```bash
+# Step 1: analyze and convert
+python3 6ColorsConverter/analyze.py photo.jpg --apply --output photo.bmp
+
+# Step 2: display on the e-ink screen
+python3 display_picture.py photo.bmp
+```
+
+`display_picture.py` expects the image to already be sized and color-quantized by `convert.py`. It does no image processing itself.
+
 ## Scripts
 
-Both scripts live in `6ColorsConverter/`.
+### `display_picture.py` — Send image to the display
+
+Clears the screen, loads a BMP, and sends it to the Waveshare epd7in3e display via the driver in `./lib`.
+
+```bash
+python3 display_picture.py <image_file>
+```
+
+Requires the Waveshare driver installed under `lib/` (path is resolved relative to the script).
+
+---
+
+Scripts for conversion live in `6ColorsConverter/`.
 
 ### `convert.py` — Image conversion
 
@@ -57,3 +81,4 @@ python3 6ColorsConverter/analyze.py <image_file> [--apply] [--output PATH]
 - `Pillow`
 - `numpy`
 - `scikit-image` (optional — only needed for `--lab`)
+- Waveshare e-Paper driver (installed under `lib/`, not on PyPI)
