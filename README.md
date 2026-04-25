@@ -165,7 +165,7 @@ Add (replace `<user>` with your Pi username):
 sudo nano /etc/systemd/system/photo-frame.service
 ```
 
-Paste (replace `<user>` with your Pi username):
+Paste:
 ```ini
 [Unit]
 Description=Photo Frame
@@ -173,10 +173,10 @@ After=network.target          # wait until basic system services are up before s
 
 [Service]
 ExecStartPre=/bin/sleep 30    # wait 30s after boot — gives you time to SSH in if needed
-ExecStart=/usr/bin/python3 /home/<user>/piBoot/run_frame.py --image-dir /home/<user>/Pictures
+ExecStart=/usr/bin/python3 <path to run_frame.py> --image-dir <path to your pictures folder>
                               # the command to run
 User=<user>                   # run as your user, not root
-WorkingDirectory=/home/<user> # working directory for the script
+WorkingDirectory=<your home directory>  # working directory for the script
 StandardOutput=inherit        # send stdout to the systemd journal (visible via journalctl)
 StandardError=inherit         # send stderr to the systemd journal
 Restart=no                    # don't restart after exit (the script shuts down the Pi)
