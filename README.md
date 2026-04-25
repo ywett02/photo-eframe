@@ -110,6 +110,9 @@ python3 6ColorsConverter/convert.py myphoto.jpg --mode cut --saturation 2.5 --co
 
 # Batch convert all JPGs in a folder
 for f in *.jpg; do python3 6ColorsConverter/convert.py "$f" --mode cut; done
+
+# Batch analyze and auto-convert all JPG/JPEG files into a target folder
+for f in *.jpg *.jpeg; do [ -f "$f" ] && python3 6ColorsConverter/analyze.py "$f" --apply --output-dir ~/Pictures; done
 ```
 
 ### `display_picture.py` — Send image to the display (run on the Pi)

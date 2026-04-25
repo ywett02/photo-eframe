@@ -31,6 +31,7 @@ parser.add_argument('--sharpness', type=float, default=2.0, help='Sharpness enha
 parser.add_argument('--brightness', type=float, default=1.0, help='Local tone mapping target (1.0 = equalize only, >1.0 = brighter target)')
 parser.add_argument('--gamma', type=float, default=1.0, help='Gamma correction applied before quantization (1.0 = no change, <1.0 brightens midtones)')
 parser.add_argument('--output', type=str, default=None, help='Output file path (default: <input>_<mode>_output.bmp)')
+parser.add_argument('--output-dir', type=str, default=None, help='Directory to write the output BMP into (overrides the directory part of --output)')
 parser.add_argument('--gamap', type=float, default=0.25, help='Soft gamut mapping strength before quantization (0.0–1.0, default 0.25)')
 parser.add_argument('--lab', action='store_true', help='Use CIELAB Floyd-Steinberg dithering (requires scikit-image, slow ~60s)')
 # Parse command line arguments
@@ -278,5 +279,8 @@ if quantized_image is None:
 
 # Save output image
 output_filename = args.output if args.output else os.path.splitext(input_filename)[0] + '_' + display_mode + '_output.bmp'
+if args.output_dir:
+    os.makedirs(args.output_dir, exist_ok=True)
+    output_filename = os.path.join(args.output_dir, os.path.basename(output_filename))
 quantized_image.save(output_filename)
 print(f'Successfully converted {input_filename} to {output_filename}')

@@ -132,6 +132,8 @@ def main():
                         help='Run convert.py with the recommended parameters after analysis')
     parser.add_argument('--output', type=str, default=None,
                         help='Output file path passed to convert.py (default: <input>_<mode>_output.bmp)')
+    parser.add_argument('--output-dir', type=str, default=None,
+                        help='Directory to write the output BMP into (passed to convert.py)')
     parser.add_argument('--gamap', type=float, default=0.25,
                         help='Soft gamut mapping strength (0.0–1.0, default 0.25, passed to convert.py)')
     parser.add_argument('--lab', action='store_true',
@@ -205,6 +207,8 @@ def main():
         cmd += ['--dir', args.dir]
     if args.output:
         cmd += ['--output', args.output]
+    if args.output_dir:
+        cmd += ['--output-dir', args.output_dir]
     cmd += ['--gamap', f'{args.gamap:.2f}']
     if args.lab:
         cmd += ['--lab']
