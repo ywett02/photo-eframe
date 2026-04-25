@@ -30,6 +30,22 @@ python3 display_picture.py <image_file>
 
 Requires the Waveshare driver installed under `lib/` (path is resolved relative to the script).
 
+### `piBoot/display_random_picture.py` — Pick and display a random image
+
+Picks a random BMP from a given directory and displays it. No shutdown.
+
+```bash
+python3 piBoot/display_random_picture.py --image-dir <path>
+```
+
+### `piBoot/run_frame.py` — Boot script (display + shutdown)
+
+Calls `display_random_picture.main()`, then waits 5 minutes and shuts down the Pi. Designed to run on boot via systemd. If `/boot/firmware/keepalive` exists, shutdown is skipped.
+
+```bash
+python3 piBoot/run_frame.py --image-dir <path>
+```
+
 ---
 
 Scripts for conversion live in `6ColorsConverter/`.
