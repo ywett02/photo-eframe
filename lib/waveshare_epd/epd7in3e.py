@@ -186,7 +186,7 @@ class EPD:
         # Check if we need to rotate the image
         imwidth, imheight = image.size
         if(imwidth == self.width and imheight == self.height):
-            image_temp = image
+            image_temp = image.rotate(180)
         elif(imwidth == self.height and imheight == self.width):
             image_temp = image.rotate(90, expand=True)
         else:
