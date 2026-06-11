@@ -37,4 +37,4 @@ if __name__ == "__main__":
     epd.display(epd.getbuffer(image))
 
     logging.info("Done! Image will remain on screen.")
-    epd7in3e.epdconfig.module_exit(cleanup=False)
+    epd.sleep()
