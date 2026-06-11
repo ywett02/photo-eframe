@@ -5,6 +5,14 @@ import numpy as np
 from PIL import Image, ImagePalette, ImageOps, ImageFilter
 import argparse
 
+from crop_planner import (
+    best_effort_shift_crop_to_faces,
+    center_crop_box,
+    detect_faces,
+    faces_fit_crop,
+    shift_crop_to_include_faces,
+)
+
 # ── Palette constants (measured Waveshare E6 pigment colors) ──────────────────
 PALETTE_RGB = np.array([
     [  0,   0,   0],   # black
@@ -34,6 +42,7 @@ parser.add_argument('--output', type=str, default=None, help='Output file path (
 parser.add_argument('--output-dir', type=str, default=None, help='Directory to write the output BMP into (overrides the directory part of --output)')
 parser.add_argument('--gamap', type=float, default=0.25, help='Soft gamut mapping strength before quantization (0.0–1.0, default 0.25)')
 parser.add_argument('--lab', action='store_true', help='Use CIELAB Floyd-Steinberg dithering (requires scikit-image, slow ~60s)')
+parser.add_argument('--smart-crop', action='store_true', help='Shift cut-mode crop to keep detected faces inside when OpenCV is available')
 # Parse command line arguments
 args = parser.parse_args()
 
@@ -190,16 +199,22 @@ if display_mode == 'scale':
     paste_left = (target_width - resized_width) // 2
     paste_top  = (target_height - resized_height) // 2
 elif display_mode == 'cut':
-    img_ar = width / height
-    tgt_ar = target_width / target_height
-    if img_ar >= tgt_ar:
-        new_w = int(height * tgt_ar)
-        x0    = (width - new_w) // 2
-        box   = (x0, 0, x0 + new_w, height)
-    else:
-        new_h = int(width / tgt_ar)
-        y0    = (height - new_h) // 2
-        box   = (0, y0, width, y0 + new_h)
+    box = center_crop_box(width, height, target_width, target_height)
+    if args.smart_crop:
+        faces, face_detection = detect_faces(input_image)
+        shifted_box = shift_crop_to_include_faces(width, height, box, faces)
+        if faces and shifted_box != box and faces_fit_crop(faces, shifted_box):
+            print(f'Smart crop shifted to keep {len(faces)} face(s) inside.')
+            box = shifted_box
+        elif faces and not faces_fit_crop(faces, box):
+            best_effort_box = best_effort_shift_crop_to_faces(width, height, box, faces)
+            if best_effort_box != box:
+                print(f'Warning: smart crop could not keep {len(faces)} face(s) fully inside; using best shifted crop.')
+                box = best_effort_box
+            else:
+                print(f'Warning: smart crop could not keep {len(faces)} face(s) fully inside.')
+        else:
+            print(f'Smart crop used centered crop ({face_detection}).')
     content_image = input_image.crop(box).resize((target_width, target_height), Image.LANCZOS)
 
 # Adaptive enhancement pipeline — applied to image content only, before white borders are added

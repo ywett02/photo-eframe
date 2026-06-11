@@ -15,6 +15,8 @@ import subprocess
 import numpy as np
 from PIL import Image, ImageFilter, ImageStat
 
+from crop_planner import detect_faces, plan_fill_crop
+
 
 # ── Analysis functions ────────────────────────────────────────────────────────
 
@@ -24,16 +26,12 @@ def get_target_size(width, height, direction):
     return (800, 480) if width > height else (480, 800)
 
 
-def suggest_mode(width, height, target_w, target_h):
-    img_ar  = width / height
-    tgt_ar  = target_w / target_h
-    ar_diff = abs(img_ar - tgt_ar) / tgt_ar
-    if ar_diff < 0.15:
-        return 'cut',   (f'image aspect ratio ({img_ar:.2f}) is close to the display '
-                         f'({tgt_ar:.2f}), cropping loses very little')
-    else:
-        return 'scale', (f'image aspect ratio ({img_ar:.2f}) differs from the display '
-                         f'({tgt_ar:.2f}) by {ar_diff*100:.0f}%, letterboxing avoids unwanted cropping')
+def suggest_mode(width, height, target_w, target_h, rgb_img, override='auto'):
+    faces, face_detection = detect_faces(rgb_img)
+    crop_plan = plan_fill_crop(width, height, target_w, target_h, faces, face_detection)
+    if override == 'auto':
+        return crop_plan.mode, crop_plan.reason
+    return override, f'forced by --mode {override}; auto would choose {crop_plan.mode} ({crop_plan.reason})'
 
 
 def analyze_brightness(mean_l):
@@ -127,6 +125,8 @@ def main():
     parser.add_argument('image_file', type=str, help='Input image file')
     parser.add_argument('--dir', choices=['landscape', 'portrait'],
                         help='Force display orientation (passed through to convert.py)')
+    parser.add_argument('--mode', choices=['auto', 'scale', 'cut'], default='auto',
+                        help='Mode recommendation: auto prefers safe full-screen crops, or force scale/cut')
     parser.add_argument('--dither', type=int, choices=[0, 3], default=3,
                         help='Dither algorithm to pass through: 0=NONE, 3=FLOYDSTEINBERG (default 3)')
     parser.add_argument('--apply', action='store_true',
@@ -163,7 +163,7 @@ def main():
     print(f'  Target : {target_w} x {target_h} px (e-ink display)')
     print('=' * 57)
 
-    mode,       mode_reason       = suggest_mode(width, height, target_w, target_h)
+    mode,       mode_reason       = suggest_mode(width, height, target_w, target_h, rgb, args.mode)
     brightness, brightness_reason = analyze_brightness(stat.mean[0])
     contrast,   contrast_reason   = analyze_contrast(stat.stddev[0])
     saturation, saturation_reason = analyze_saturation(rgb)
@@ -211,6 +211,8 @@ def main():
     if args.output_dir:
         cmd += ['--output-dir', args.output_dir]
     cmd += ['--gamap', f'{args.gamap:.2f}']
+    if mode == 'cut':
+        cmd += ['--smart-crop']
     if args.lab:
         cmd += ['--lab']
 

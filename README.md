@@ -27,6 +27,7 @@ The Waveshare PhotoPainter display hardware supports 6 colors: **black, white, r
 - Python 3
 - `Pillow`, `numpy`
 - `scikit-image` (optional — only needed for `--lab` dithering mode)
+- `opencv-python` (optional — enables face-aware smart crop)
 
 **Raspberry Pi** (display):
 - Python 3
@@ -71,10 +72,10 @@ The full refresh takes about 20–30 seconds — this is normal for e-paper. Onc
 
 ### `6ColorsConverter/analyze.py` — Recommended starting point
 
-Analyzes an image (brightness, contrast, saturation, sharpness, aspect ratio) and prints the recommended `convert.py` parameters. Pass `--apply` to run the conversion immediately.
+Analyzes an image (brightness, contrast, saturation, sharpness, aspect ratio, and optional face-safe cropping) and prints the recommended `convert.py` parameters. Pass `--apply` to run the conversion immediately.
 
 ```bash
-python3 6ColorsConverter/analyze.py <image_file> [--apply] [--output PATH]
+python3 6ColorsConverter/analyze.py <image_file> [--mode auto|scale|cut] [--apply] [--output PATH]
 ```
 
 ### `6ColorsConverter/convert.py` — Image conversion
@@ -89,6 +90,7 @@ python3 6ColorsConverter/convert.py <image_file> [options]
 |---|---|---|
 | `--dir landscape\|portrait` | auto | Force orientation. Auto-detected from image dimensions if omitted. |
 | `--mode scale\|cut` | `scale` | `scale`: fit whole image, may add white bars. `cut`: fill screen, may crop edges. |
+| `--smart-crop` | off | With `--mode cut`, shift the crop to keep detected faces inside when OpenCV is available. |
 | `--dither 0\|3` | `3` | `3` = Floyd-Steinberg (best quality). `0` = none. |
 | `--saturation FLOAT` | `2.0` | Adaptive saturation boost. `1.0` = no change. |
 | `--contrast FLOAT` | `1.5` | CLAHE local contrast multiplier. `1.0` = minimal. |
@@ -104,6 +106,9 @@ python3 6ColorsConverter/convert.py <image_file> [options]
 ```bash
 # Fill the whole screen (recommended for photos)
 python3 6ColorsConverter/convert.py myphoto.jpg --mode cut
+
+# Fill the whole screen and shift crop to protect detected faces
+python3 6ColorsConverter/convert.py myphoto.jpg --mode cut --smart-crop
 
 # Custom enhancement
 python3 6ColorsConverter/convert.py myphoto.jpg --mode cut --saturation 2.5 --contrast 1.8
