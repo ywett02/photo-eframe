@@ -1,21 +1,55 @@
 #!/usr/bin/env python3
-"""Display a random picture then shut down the system."""
+"""Run the one-shot random display script on a fixed interval."""
+import argparse
+import os
 import subprocess
 import sys
-import os
 import time
 
-KEEPALIVE_FILE = "/boot/firmware/keepalive"
-SHUTDOWN_DELAY_SECONDS = 5 * 60
+_DEFAULT_DISPLAY_SCRIPT = os.path.join(os.path.dirname(__file__), "display_random_picture.py")
+DEFAULT_INTERVAL_HOURS = 24.0
 
-sys.path.insert(0, os.path.dirname(__file__))
-from display_random_picture import main
 
-main()
+def display_once(image_dir, display_script):
+    subprocess.run([
+        "python3",
+        display_script,
+        "--image-dir",
+        image_dir,
+    ], check=True)
 
-if os.path.exists(KEEPALIVE_FILE):
-    print(f"Keepalive file found at {KEEPALIVE_FILE}, skipping shutdown.")
-else:
-    print(f"Shutting down in {SHUTDOWN_DELAY_SECONDS // 60} minutes...")
-    time.sleep(SHUTDOWN_DELAY_SECONDS)
-    subprocess.run(["sudo", "shutdown", "-h", "now"])
+
+def run_frame(image_dir, display_script, interval_hours, sleeper=time.sleep):
+    interval_seconds = interval_hours * 60 * 60
+
+    while True:
+        display_once(image_dir, display_script)
+        print(f"Waiting {interval_hours:g} hours before next refresh...", flush=True)
+        sleeper(interval_seconds)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run the random picture display script on a fixed interval."
+    )
+    parser.add_argument("--image-dir", required=True,
+                        help="Directory containing BMP images")
+    parser.add_argument("--display-script", default=_DEFAULT_DISPLAY_SCRIPT,
+                        help="Path to the one-shot random display script (default: ./display_random_picture.py)")
+    parser.add_argument("--interval-hours", type=float, default=DEFAULT_INTERVAL_HOURS,
+                        help="Hours to wait between refreshes (default: 24)")
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+
+    if args.interval_hours <= 0:
+        print("--interval-hours must be greater than 0", file=sys.stderr)
+        sys.exit(1)
+
+    run_frame(args.image_dir, args.display_script, args.interval_hours)
+
+
+if __name__ == "__main__":
+    main()

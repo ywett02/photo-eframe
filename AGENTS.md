@@ -42,12 +42,13 @@ Picks a random BMP from a given directory and displays it. No shutdown.
 python3 piBoot/display_random_picture.py --image-dir <path>
 ```
 
-### `piBoot/run_frame.py` — Boot script (display + shutdown)
+### `piBoot/run_frame.py` — Continuous frame runner
 
-Calls `display_random_picture.main()`, then waits 5 minutes and shuts down the Pi. Designed to run on boot via systemd. If `/boot/firmware/keepalive` exists, shutdown is skipped.
+Keeps the Pi running as a photo frame. It runs `display_random_picture.py` immediately, then runs it again after each refresh interval. Random selection stays in `display_random_picture.py`; `run_frame.py` only handles timing.
 
 ```bash
 python3 piBoot/run_frame.py --image-dir <path>
+python3 piBoot/run_frame.py --image-dir <path> --interval-hours 6
 ```
 
 ---

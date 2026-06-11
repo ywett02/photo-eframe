@@ -133,31 +133,20 @@ Picks a random BMP from a directory and displays it. Does not shut down.
 python3 piBoot/display_random_picture.py --image-dir ~/Pictures
 ```
 
-### `piBoot/run_frame.py` — Full frame boot script
+### `piBoot/run_frame.py` — Continuous frame runner
 
-Picks a random BMP, displays it, waits 5 minutes, then shuts down the Pi. Intended to run automatically on boot via systemd.
+Keeps the Pi running as a photo frame. It runs `display_random_picture.py` immediately, then runs it again after each refresh interval. Random selection stays in `display_random_picture.py`; `run_frame.py` only handles timing.
 
 ```bash
 python3 piBoot/run_frame.py --image-dir ~/Pictures
+python3 piBoot/run_frame.py --image-dir ~/Pictures --interval-hours 6
 ```
-
-To skip shutdown (e.g. for debugging), create a keepalive file on the boot partition:
-
-```bash
-# On the Pi
-touch /boot/firmware/keepalive
-
-# Or from your Mac with the SD card inserted
-touch /Volumes/bootfs/keepalive
-```
-
-Remove the file to restore normal shutdown behavior.
 
 ---
 
 ## Auto-start on boot (systemd)
 
-To have the Pi display a random picture and shut down every time it boots:
+To have the Pi stay on and change the picture automatically:
 
 **1. Copy scripts to the Pi**
 
@@ -166,18 +155,7 @@ scp piBoot/run_frame.py piBoot/display_random_picture.py <user>@<pi-hostname>:~/
 scp display_picture.py <user>@<pi-hostname>:~/
 ```
 
-**2. Allow passwordless shutdown**
-
-```bash
-sudo visudo
-```
-
-Add (replace `<user>` with your Pi username):
-```
-<user> ALL=(ALL) NOPASSWD: /usr/sbin/shutdown -h now
-```
-
-**3. Create the systemd service**
+**2. Create the systemd service**
 
 ```bash
 sudo nano /etc/systemd/system/photo-frame.service
@@ -197,25 +175,27 @@ User=<user>                   # run as your user, not root
 WorkingDirectory=<your home directory>  # working directory for the script
 StandardOutput=inherit        # send stdout to the systemd journal (visible via journalctl)
 StandardError=inherit         # send stderr to the systemd journal
-Restart=no                    # don't restart after exit (the script shuts down the Pi)
+Restart=on-failure            # restart if the runner crashes
 
 [Install]
 WantedBy=multi-user.target    # start this service in normal multi-user mode
 ```
 
-**4. Enable the service**
+To use a different refresh interval, add `--interval-hours <hours>` to `ExecStart`.
+
+**3. Enable the service**
 
 ```bash
 sudo systemctl enable photo-frame.service
 ```
 
-**5. Test it (will display a picture and shut down after 5 minutes)**
+**4. Test it (will display a picture immediately and keep running)**
 
 ```bash
 sudo systemctl start photo-frame.service
 ```
 
-**6. Check logs**
+**5. Check logs**
 
 ```bash
 journalctl -u photo-frame.service
