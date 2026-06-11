@@ -66,7 +66,8 @@ def analyze_saturation(rgb_img):
     n      = max(1, int((total / 10000) ** 0.5))
     px     = np.array(rgb_img, dtype=np.float32)[::n, ::n] / 255.0
     maxc   = px.max(axis=2)
-    s      = np.where(maxc > 0, (maxc - px.min(axis=2)) / maxc, 0.0)
+    s      = np.zeros_like(maxc)
+    np.divide(maxc - px.min(axis=2), maxc, where=maxc > 0, out=s)
     mean_s = float(s.mean())
     if mean_s < 0.08:
         return 3.0, f'mean HSV saturation {mean_s:.2f} — nearly grayscale, heavy boost needed to hit colour palette'

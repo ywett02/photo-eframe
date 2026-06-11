@@ -47,7 +47,8 @@ def apply_local_tone_mapping(rgb_np, brightness):
     blurred     = np.array(pil_img.filter(ImageFilter.GaussianBlur(radius=50)),
                            dtype=np.float32)
     global_mean = img_float.mean()
-    ratio = np.where(blurred > 0, global_mean * brightness / blurred, 1.0)
+    ratio = np.ones_like(blurred)
+    np.divide(global_mean * brightness, blurred, where=blurred > 0, out=ratio)
     ratio = np.clip(ratio, 0.5, 2.0)  # cap extreme corrections
     return np.clip(img_float * ratio, 0, 255).astype(np.uint8)
 
@@ -215,9 +216,10 @@ if args.brightness != 1.0:
 # 2. CLAHE on luminance channel (adaptive local contrast)
 gray_np  = np.array(Image.fromarray(rgb_np).convert('L'))
 clahe_np = apply_clahe(gray_np, args.contrast)
-ratio    = np.where(gray_np > 0,
-                    clahe_np.astype(np.float32) / gray_np.astype(np.float32),
-                    1.0)[..., np.newaxis]
+ratio    = np.ones_like(gray_np, dtype=np.float32)
+np.divide(clahe_np.astype(np.float32), gray_np.astype(np.float32),
+          where=gray_np > 0, out=ratio)
+ratio    = ratio[..., np.newaxis]
 rgb_np   = np.clip(rgb_np.astype(np.float32) * ratio, 0, 255).astype(np.uint8)
 
 # 3. Adaptive saturation (stronger where colours are dull)
