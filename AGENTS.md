@@ -4,7 +4,11 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-This project converts images for display on a **Waveshare E6 e-ink display** (800×480 or 480×800 px) using a fixed 7-color palette: black, white, yellow, red, orange, blue, green.
+This project converts images for display on a **Waveshare E6 e-ink display** (800×480 or 480×800 px).
+
+The physical Waveshare PhotoPainter display hardware supports 6 colors: black, white, red, yellow, green, blue.
+
+`convert.py` intentionally uses the project's current fixed 7-color software palette for generated BMPs: black, white, yellow, red, orange, blue, green. The extra orange entry is part of the current preferred converted look and is protected by the regression test. Do not remove orange or switch to direct 6-color conversion unless the goal is explicitly to change the output look. The bundled Waveshare display driver still packs images for the 6-color hardware when sending them to the frame.
 
 ## Pipeline
 
@@ -52,7 +56,7 @@ Scripts for conversion live in `6ColorsConverter/`.
 
 ### `convert.py` — Image conversion
 
-Resizes, enhances, and quantizes an image to the 6-color e-ink palette.
+Resizes, enhances, and quantizes an image to the project's 7-color software palette.
 
 ```bash
 python3 6ColorsConverter/convert.py <image_file> [options]

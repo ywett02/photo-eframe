@@ -2,13 +2,13 @@
 
 Convert photos on your Mac and display them on a Waveshare 7.3" E6 e-paper display connected to a Raspberry Pi Zero.
 
-The display supports 6 colors: **black, white, red, yellow, green, blue**. Photos with bold, saturated colors look best.
+The Waveshare PhotoPainter display hardware supports 6 colors: **black, white, red, yellow, green, blue**. This project's converter currently uses a 7-color software palette for the generated BMPs: **black, white, yellow, red, orange, blue, green**. The extra orange entry is intentional because it gives converted photos the current warmer look; the bundled Waveshare display driver still packs images for the 6-color hardware when sending them to the frame.
 
 ---
 
 ## Example Result
 
-| Original photo | Converted (6-color BMP) | On the frame |
+| Original photo | Converted BMP | On the frame |
 |---|---|---|
 | ![Original](assets/gdansk_city.jpg) | ![Converted](assets/gdansk_city_converted.png) | ![Frame](assets/gdansk_frame.jpg) |
 
@@ -79,7 +79,7 @@ python3 6ColorsConverter/analyze.py <image_file> [--apply] [--output PATH]
 
 ### `6ColorsConverter/convert.py` — Image conversion
 
-Resizes, enhances, and quantizes an image to the 6-color e-ink palette. Output is a `.bmp` file sized to 800×480 or 480×800 px.
+Resizes, enhances, and quantizes an image to the project's 7-color software palette. Output is a `.bmp` file sized to 800×480 or 480×800 px.
 
 ```bash
 python3 6ColorsConverter/convert.py <image_file> [options]
